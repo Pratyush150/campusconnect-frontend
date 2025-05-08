@@ -1,61 +1,68 @@
 // src/components/ChatWindow.jsx
-import { useEffect, useRef, useState } from 'react';
-import io from 'socket.io-client';
+import { useState, useEffect, useRef } from 'react';
+import { Box, TextInput, Button, ScrollArea, Group, Text } from '@mantine/core';
+import { io } from 'socket.io-client';
 
-export default function ChatWindow({ currentUser }) {
+export default function ChatWindow({ roomId, currentUser }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const socketRef = useRef();
+  const socket = useRef(io(import.meta.env.VITE_CLIENT_URL));
+  const scrollRef = useRef();
 
   useEffect(() => {
-    socketRef.current = io(process.env.REACT_APP_SOCKET_URL, {
-      auth: { token: localStorage.getItem('token') }
-    });
-
-    socketRef.current.on('receive_message', (message) => {
+    socket.current.emit('join_room', roomId);
+    
+    socket.current.on('receive_message', (message) => {
       setMessages(prev => [...prev, message]);
     });
 
-    socketRef.current.on('user_typing', (userId) => {
+    socket.current.on('user_typing', (userId) => {
       setIsTyping(true);
       setTimeout(() => setIsTyping(false), 2000);
     });
 
-    return () => socketRef.current.disconnect();
-  }, []);
+    return () => {
+      socket.current.off('receive_message');
+      socket.current.off('user_typing');
+    };
+  }, [roomId]);
 
-  const sendMessage = () => {
+  const handleSend = () => {
     if (newMessage.trim()) {
-      socketRef.current.emit('send_message', {
-        roomId: 'general',
-        text: newMessage
+      socket.current.emit('send_message', {
+        roomId,
+        content: newMessage,
+        sender: currentUser.id
       });
       setNewMessage('');
     }
   };
 
   return (
-    <div className="chat-container">
-      <div className="messages">
-        {messages.map(msg => (
-          <div key={msg.timestamp} className="message">
-            <p>{msg.text}</p>
-          </div>
+    <Box style={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
+      <ScrollArea style={{ flex: 1 }} viewportRef={scrollRef}>
+        {messages.map((msg) => (
+          <Group key={msg.timestamp} mb="sm">
+            <Text weight={600}>{msg.sender === currentUser.id ? 'You' : 'Mentor'}:</Text>
+            <Text>{msg.content}</Text>
+          </Group>
         ))}
-        {isTyping && <div className="typing-indicator">Someone is typing...</div>}
-      </div>
-      <div className="input-area">
-        <input 
+        {isTyping && <Text color="dimmed">Mentor is typing...</Text>}
+      </ScrollArea>
+      
+      <Group>
+        <TextInput
           value={newMessage}
-          onChange={e => {
+          onChange={(e) => {
             setNewMessage(e.target.value);
-            socketRef.current.emit('typing', 'general');
+            socket.current.emit('typing', roomId);
           }}
-          onKeyPress={e => e.key === 'Enter' && sendMessage()}
+          placeholder="Type a message..."
+          style={{ flex: 1 }}
         />
-        <button onClick={sendMessage}>Send</button>
-      </div>
-    </div>
+        <Button onClick={handleSend}>Send</Button>
+      </Group>
+    </Box>
   );
 }

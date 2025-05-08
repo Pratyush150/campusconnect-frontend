@@ -1,47 +1,37 @@
 // src/pages/Clubs.jsx
+import { Card, Button, Group, Text, Timeline } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Clubs() {
   const [clubs, setClubs] = useState([]);
-  const [name, setName] = useState('');
-  const [desc, setDesc] = useState('');
 
   useEffect(() => {
-    axios.get(`${API_URL}/clubs`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    }).then(res => setClubs(res.data));
+    axios.get(`${API_URL}/clubs`).then(res => setClubs(res.data));
   }, []);
-
-  // Create a club
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    await axios.post(`${API_URL}/clubs`, { name, description: desc }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setName('');
-    setDesc('');
-    // Refetch clubs
-    const res = await axios.get(`${API_URL}/clubs`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setClubs(res.data);
-  };
 
   return (
     <div>
-      <h2>Clubs</h2>
-      <form onSubmit={handleCreate}>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="Club Name" required />
-        <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description" required />
-        <button type="submit">Create Club</button>
-      </form>
-      <ul>
+      <Text size="xl" weight={700}>Clubs</Text>
+      <Group>
         {clubs.map(club => (
-          <li key={club.id}>{club.name}: {club.description}</li>
+          <Card key={club.id} shadow="sm" p="lg" withBorder>
+            <Text weight={500}>{club.name}</Text>
+            <Text size="sm" color="dimmed">{club.description}</Text>
+            <Button mt="md" variant="light">Join</Button>
+            <Timeline active={0} bulletSize={24} lineWidth={2} mt="md">
+              {club.events.map(ev => (
+                <Timeline.Item key={ev.id} title={ev.title} bullet={<span>📅</span>}>
+                  <Text color="dimmed" size="sm">{ev.date}</Text>
+                  <Text size="xs">{ev.description}</Text>
+                </Timeline.Item>
+              ))}
+            </Timeline>
+          </Card>
         ))}
-      </ul>
+      </Group>
     </div>
   );
 }

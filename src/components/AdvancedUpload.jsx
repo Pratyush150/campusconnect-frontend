@@ -1,66 +1,56 @@
 // src/components/AdvancedUpload.jsx
-import { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Cloudinary } from '@cloudinary/url-gen';
+import { useState } from 'react';
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
+import { Button, Group, Text, Image, Loader } from '@mantine/core';
+import { IconUpload, IconPhoto } from '@tabler/icons-react';
 
-export default function AdvancedUpload() {
-  const [preview, setPreview] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+export default function AdvancedUpload({ onUpload }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const onDrop = useCallback(async ([file]) => {
-    // Generate preview
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
+  const handleDrop = (files) => {
+    setFile(files[0]);
+    setPreview(URL.createObjectURL(files[0]));
+  };
 
-    // Upload to Cloudinary
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'campusconnect_uploads');
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/upload`,
-      {
-        method: 'POST',
-        body: formData,
-        onUploadProgress: (progress) => {
-          setUploadProgress(Math.round((progress.loaded / progress.total) * 100));
-        }
-      }
-    );
-    
-    const data = await response.json();
-    console.log('Uploaded URL:', data.secure_url);
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg'],
-      'application/pdf': ['.pdf']
-    },
-    maxSize: 10 * 1024 * 1024 // 10MB
-  });
+  const handleUpload = async () => {
+    setLoading(true);
+    await onUpload(file);
+    setLoading(false);
+    setFile(null);
+    setPreview('');
+  };
 
   return (
-    <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
-      <input {...getInputProps()} />
-      
-      {preview ? (
-        <img src={preview} alt="Preview" className="preview-image" />
-      ) : (
-        <div className="upload-prompt">
-          {isDragActive ? (
-            <p>Drop files here!</p>
-          ) : (
-            <p>Drag & drop files here, or click to select</p>
-          )}
-          {uploadProgress > 0 && (
-            <div className="progress-bar">
-              <div style={{ width: `${uploadProgress}%` }} />
+    <div>
+      <Dropzone
+        onDrop={handleDrop}
+        accept={[MIME_TYPES.pdf, MIME_TYPES.png, MIME_TYPES.jpeg]}
+        maxSize={10 * 1024 * 1024}
+        multiple={false}
+      >
+        {(status) => (
+          <Group position="center" spacing="xl" style={{ minHeight: 120, pointerEvents: 'none' }}>
+            <IconUpload size={40} />
+            <div>
+              <Text size="xl" inline>
+                Drag file here or click to select
+              </Text>
+              <Text size="sm" color="dimmed" inline mt={7}>
+                PDF, PNG, JPG up to 10MB
+              </Text>
             </div>
-          )}
-        </div>
+          </Group>
+        )}
+      </Dropzone>
+      {preview && (
+        <Image src={preview} alt="preview" width={200} mt="md" />
+      )}
+      {file && (
+        <Button onClick={handleUpload} loading={loading} mt="md">
+          Upload
+        </Button>
       )}
     </div>
   );
