@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Avatar, Text, Button, TextInput, Select, JsonInput, Group, Badge } from '@mantine/core';
-import { BrandLinkedin } from 'tabler-icons-react';
+import { IconBrandLinkedin } from '@tabler/icons-react';
 import axios from 'axios';
 
 const availabilityPresets = [
@@ -15,7 +15,7 @@ const LinkedInVerification = ({ user }) => (
     {user?.linkedinVerified ? (
       <Badge 
         color="blue" 
-        leftSection={<BrandLinkedin size={16} />}
+        leftSection={<IconBrandLinkedin size={16} />}
         component="a"
         href={user.linkedinUrl}
         target="_blank"
@@ -24,7 +24,7 @@ const LinkedInVerification = ({ user }) => (
       </Badge>
     ) : (
       <Button 
-        leftIcon={<BrandLinkedin />}
+        leftIcon={<IconBrandLinkedin />}
         onClick={() => window.location.href = '/api/auth/linkedin'}
         variant="outline"
       >
@@ -53,7 +53,7 @@ export default function MentorProfile() {
     <Card padding="xl" shadow="sm">
       <Avatar src={profile.profilePic} size={120} radius={60} mx="auto" />
       
-      {/* Replaced TextInput with LinkedIn Verification Component */}
+      {/* LinkedIn Verification Component */}
       <LinkedInVerification user={profile} />
 
       <TextInput
@@ -86,4 +86,3 @@ export default function MentorProfile() {
     </Card>
   );
 }
-
