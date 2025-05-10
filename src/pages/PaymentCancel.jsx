@@ -1,4 +1,6 @@
 // src/pages/PaymentCancel.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { IconCircleX } from '@tabler/icons-react';
 
 export default function PaymentCancel() {

@@ -1,4 +1,7 @@
 // A simple card to display resource info
+import React from 'react';
+// ...rest of your imports and code
+
 export default function ResourceCard({ resource }) {
     return (
       <div className="resource-card">

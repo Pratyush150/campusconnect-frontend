@@ -1,4 +1,6 @@
 // src/components/SessionHistory.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useEffect, useState } from 'react';
 import { Table, Badge } from '@mantine/core';
 import axios from 'axios';

@@ -1,4 +1,6 @@
 // src/pages/ClubManagement.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';

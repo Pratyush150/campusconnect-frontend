@@ -1,3 +1,5 @@
+import React from 'react';
+// ...rest of your imports and code
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../api/auth';

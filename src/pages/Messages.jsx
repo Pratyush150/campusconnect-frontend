@@ -1,4 +1,6 @@
 // src/pages/Messages.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MessageThread from '../components/MessageThread';

@@ -1,4 +1,6 @@
 // src/components/VideoCall.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useEffect } from 'react';
 
 export default function VideoCall({ roomName }) {

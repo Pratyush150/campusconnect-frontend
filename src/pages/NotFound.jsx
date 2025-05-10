@@ -1,4 +1,6 @@
 // src/pages/NotFound.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { Container, Title, Text, Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 

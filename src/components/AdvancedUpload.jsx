@@ -1,4 +1,5 @@
 // src/components/AdvancedUpload.jsx
+import React from 'react';
 import { useState } from 'react';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { Button, Group, Text, Image, Loader } from '@mantine/core';

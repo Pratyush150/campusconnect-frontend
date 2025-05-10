@@ -1,4 +1,6 @@
 // src/pages/Clubs.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { Card, Button, Group, Text, Timeline } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import axios from 'axios';

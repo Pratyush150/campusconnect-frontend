@@ -1,4 +1,6 @@
 // src/pages/LinkedInCallback.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showNotification } from '@mantine/notifications';

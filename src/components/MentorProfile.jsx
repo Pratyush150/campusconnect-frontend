@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Card, Avatar, Text, Button, TextInput, Select, JsonInput, Group, Badge } from '@mantine/core';
 import { IconBrandLinkedin } from '@tabler/icons-react';

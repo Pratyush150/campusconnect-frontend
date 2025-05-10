@@ -1,4 +1,6 @@
 // src/pages/AdminDashboard.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { Table, Button, Group, Text, Badge, Title, Divider } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { useEffect, useState } from 'react';

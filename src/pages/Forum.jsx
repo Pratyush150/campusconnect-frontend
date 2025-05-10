@@ -1,4 +1,6 @@
 // src/pages/Forum.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useState, useEffect } from 'react';
 import { Card, Textarea, Button, Group, Text } from '@mantine/core';
 import axios from 'axios';

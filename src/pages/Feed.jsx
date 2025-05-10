@@ -1,3 +1,5 @@
+import React from 'react';
+// ...rest of your imports and code
 import { Card, Textarea, Button, Group, Loader, Text, Avatar, Divider } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { showNotification } from '@mantine/notifications';

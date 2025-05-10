@@ -1,4 +1,6 @@
 // src/pages/Events.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;

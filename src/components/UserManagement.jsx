@@ -1,4 +1,5 @@
 // src/components/UserManagement.jsx
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Table, Button, Select } from '@mantine/core';
 import axios from 'axios';

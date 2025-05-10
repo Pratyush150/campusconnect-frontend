@@ -1,4 +1,5 @@
 // src/components/FeedbackSurvey.jsx
+import React from 'react';
 import { useState } from 'react';
 import { Card, Rating, Textarea, Button, Text } from '@mantine/core';
 

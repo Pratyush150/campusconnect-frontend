@@ -1,3 +1,5 @@
+import React from 'react';
+// ...rest of your imports and code
 import { Grid, Card, Avatar, Text, Badge, Group } from '@mantine/core';
 import { useQuery } from 'react-query';
 

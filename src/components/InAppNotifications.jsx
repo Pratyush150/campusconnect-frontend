@@ -1,4 +1,5 @@
 // src/components/InAppNotifications.jsx
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Notification, Group } from '@mantine/core';
 import { io } from 'socket.io-client';

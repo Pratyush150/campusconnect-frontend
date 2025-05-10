@@ -1,4 +1,5 @@
 // src/components/BookingForm.jsx
+import React from 'react';
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Card, Text, Button } from '@mantine/core';

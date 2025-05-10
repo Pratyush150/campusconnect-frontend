@@ -1,4 +1,5 @@
 // components/BookingModal.jsx
+import React from 'react';
 import { Modal, Text, Group, Button } from '@mantine/core';
 import { Calendar } from '@mantine/dates';
 import { useState } from 'react';

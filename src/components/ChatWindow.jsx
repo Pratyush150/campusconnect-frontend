@@ -1,4 +1,5 @@
 // src/components/ChatWindow.jsx
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { Box, TextInput, Button, ScrollArea, Group, Text } from '@mantine/core';
 import { io } from 'socket.io-client';

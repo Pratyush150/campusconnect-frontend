@@ -1,4 +1,6 @@
 // src/pages/Profile.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useAuth } from '../context/AuthContext';
 import StudentProfile from '../components/StudentProfile';
 import MentorProfile from '../components/MentorProfile';

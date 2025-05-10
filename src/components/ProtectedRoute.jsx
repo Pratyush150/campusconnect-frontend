@@ -1,3 +1,5 @@
+import React from 'react';
+// ...rest of your imports and code
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 

@@ -1,4 +1,5 @@
 // src/components/MentorReviews.jsx
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Rating, Textarea, Button, Group, Card, Text } from '@mantine/core';
 import axios from 'axios';

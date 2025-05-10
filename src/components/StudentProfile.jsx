@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, Avatar, Text, Button, Group, TextInput } from '@mantine/core';
 import { useState } from 'react';
 

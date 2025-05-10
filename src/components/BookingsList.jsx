@@ -1,4 +1,5 @@
 // src/components/BookingsList.jsx
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Table, Text } from '@mantine/core';
 import axios from 'axios';

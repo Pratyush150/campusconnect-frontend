@@ -1,4 +1,6 @@
 // src/pages/FindMentor.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { useState, useEffect } from 'react';
 import { Card, TextInput, Select, Group, Avatar, Button, Badge } from '@mantine/core';
 import axios from 'axios';

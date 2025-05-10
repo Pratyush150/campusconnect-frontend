@@ -1,4 +1,6 @@
 // src/pages/PaymentSuccess.jsx
+import React from 'react';
+// ...rest of your imports and code
 import { Container, Title, Text, Button } from '@mantine/core';
 import { IconCircleCheck } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
