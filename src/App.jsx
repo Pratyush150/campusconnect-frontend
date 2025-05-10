@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Resources from './pages/Resources';
 import Feed from './pages/Feed';
-import { PaymentSuccess, PaymentCancel } from './pages';
+import { PaymentSuccess, PaymentCancel } from './pages/index';
 import FindMentor from './pages/FindMentor';
 import Forum from './pages/Forum';
 import NotFound from './pages/NotFound';
