@@ -57,7 +57,7 @@ export default function Register() {
             Create your account
           </Title>
           <Text align="center" color="dimmed" size="sm" mb={20}>
-            Join CampusConnect and unlock your mentorship journey!
+            Join CampusConnect and unlock your dream journey!
           </Text>
           <form onSubmit={handleSubmit}>
             <TextInput label="Name" value={form.name} onChange={handleChange('name')} required mb="sm" />
