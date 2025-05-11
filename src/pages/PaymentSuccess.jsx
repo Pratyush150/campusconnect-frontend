@@ -1,21 +1,21 @@
-// src/pages/PaymentSuccess.jsx
 import React from 'react';
-// ...rest of your imports and code
-import { Container, Title, Text, Button } from '@mantine/core';
+import { Container, Title, Text, Button, Center } from '@mantine/core';
 import { IconCircleCheck } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 export default function PaymentSuccess() {
   return (
-    <Container size="sm" py="xl">
-      <IconCircleCheck size={64} color="green" />
-      <Title order={1} mt="md">Payment Successful!</Title>
-      <Text mt="sm" size="lg">
-        Your mentorship session has been booked. Check your email for confirmation.
-      </Text>
-      <Button component={Link} to="/bookings" mt="xl">
-        View Bookings
-      </Button>
+    <Container size="sm">
+      <Center style={{ height: '100vh', flexDirection: 'column' }}>
+        <IconCircleCheck size={80} color="#40c057" />
+        <Title order={1} mt="xl">Payment Successful!</Title>
+        <Text size="lg" mt="sm" color="dimmed" align="center">
+          Your mentorship session has been booked successfully.
+        </Text>
+        <Button component={Link} to="/bookings" size="lg" mt="xl">
+          View Bookings
+        </Button>
+      </Center>
     </Container>
   );
 }

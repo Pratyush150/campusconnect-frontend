@@ -1,12 +1,43 @@
+
 import React from 'react';
-// ...rest of your imports and code
-import { Card, Textarea, Button, Group, Loader, Text, Avatar, Divider } from '@mantine/core';
+import { Card, Textarea, Button, Group, Loader, Text, Avatar, Divider, Stack, ActionIcon } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { showNotification } from '@mantine/notifications';
+import { IconHeart, IconMessageCircle, IconShare } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const PostCard = ({ post }) => (
+  <Card withBorder shadow="sm" radius="md" mb="md">
+    <Group align="start" noWrap>
+      <Avatar src={post.author?.profilePic} radius="xl" />
+      <Stack spacing={4} style={{ flex: 1 }}>
+        <Group position="apart">
+          <Text weight={600}>{post.author?.name}</Text>
+          <Text size="sm" color="dimmed">
+            {new Date(post.createdAt).toLocaleDateString()}
+          </Text>
+        </Group>
+        <Text size="sm">{post.content}</Text>
+        <Group mt="sm" spacing="xl">
+          <ActionIcon>
+            <IconHeart size={18} />
+            <Text ml={4}>{post.likesCount}</Text>
+          </ActionIcon>
+          <ActionIcon>
+            <IconMessageCircle size={18} />
+            <Text ml={4}>{post.commentsCount}</Text>
+          </ActionIcon>
+          <ActionIcon>
+            <IconShare size={18} />
+          </ActionIcon>
+        </Group>
+      </Stack>
+    </Group>
+  </Card>
+);
 
 export default function Feed() {
   const { user } = useAuth();
@@ -38,27 +69,35 @@ export default function Feed() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: 'auto' }}>
-      <Card shadow="sm" p="lg" mb="lg" withBorder>
-        <form onSubmit={handleSubmit}>
+    <Container size="md" py="xl">
+      <Card withBorder shadow="sm" mb="xl">
+        <Group align="start" noWrap>
+          <Avatar src={user?.profilePic} radius="xl" />
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder="Share your thoughts..."
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             autosize
             minRows={2}
-            mb="sm"
+            style={{ flex: 1 }}
           />
-          <Group position="right">
-            <Button type="submit">Post</Button>
-          </Group>
-        </form>
+        </Group>
+        <Group position="right" mt="md">
+          <Button onClick={handleSubmit} loading={loading}>
+            Post
+          </Button>
+        </Group>
       </Card>
+
       {loading ? (
         <Loader />
       ) : (
-        posts.map(post => <PostCard key={post.id} post={post} />)
+        <Stack>
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </Stack>
       )}
-    </div>
+    </Container>
   );
 }

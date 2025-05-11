@@ -1,16 +1,9 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { Card, Avatar, Text, Button, TextInput, Select, JsonInput, Group, Badge } from '@mantine/core';
+import React, { useState, useEffect } from 'react';
+import { Card, Avatar, Text, Button, TextInput, Select, JsonInput, Group, Badge, Grid, LoadingOverlay } from '@mantine/core';
 import { IconBrandLinkedin } from '@tabler/icons-react';
 import axios from 'axios';
+import { showNotification } from '@mantine/notifications';
 
-const availabilityPresets = [
-  { value: 'morning', label: 'Morning (9 AM - 12 PM)' },
-  { value: 'afternoon', label: 'Afternoon (1 PM - 4 PM)' },
-  { value: 'evening', label: 'Evening (6 PM - 9 PM)' }
-];
-
-// LinkedIn Verification Component
 const LinkedInVerification = ({ user }) => (
   <Group>
     {user?.linkedinVerified ? (
@@ -35,55 +28,69 @@ const LinkedInVerification = ({ user }) => (
   </Group>
 );
 
-export default function MentorProfile() {
-  const [profile, setProfile] = useState({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    axios.get('/api/mentor/profile')
-      .then(res => setProfile(res.data))
-      .finally(() => setLoading(false));
-  }, []);
+export default function MentorProfile({ user, onProfileUpdate }) {
+  const [profile, setProfile] = useState(user);
+  const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    await axios.put('/api/mentor/profile', profile);
-    // Show success toast
+    try {
+      setLoading(true);
+      await axios.put('/api/mentor/profile', profile);
+      onProfileUpdate(profile);
+      showNotification({ color: 'green', message: 'Profile updated successfully' });
+    } catch {
+      showNotification({ color: 'red', message: 'Failed to update profile' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Card padding="xl" shadow="sm">
-      <Avatar src={profile.profilePic} size={120} radius={60} mx="auto" />
-      
-      {/* LinkedIn Verification Component */}
-      <LinkedInVerification user={profile} />
+    <Card padding="xl" shadow="sm" radius="md">
+      <LoadingOverlay visible={loading} />
+      <Grid>
+        <Grid.Col span={12} style={{ textAlign: 'center' }}>
+          <Avatar src={profile.profilePic} size={120} radius={60} mx="auto" />
+          <LinkedInVerification user={profile} />
+        </Grid.Col>
 
-      <TextInput
-        label="Hourly Rate ($)"
-        type="number"
-        value={profile.hourlyRate || 0}
-        onChange={e => setProfile({...profile, hourlyRate: parseFloat(e.target.value)})}
-        mt="md"
-      />
+        <Grid.Col span={6}>
+          <TextInput
+            label="Hourly Rate ($)"
+            type="number"
+            value={profile.hourlyRate || 0}
+            onChange={e => setProfile({...profile, hourlyRate: parseFloat(e.target.value)})}
+            required
+          />
+        </Grid.Col>
 
-      <Select
-        label="Expertise Area"
-        data={['Computer Science', 'Business', 'Engineering', 'Design']}
-        value={profile.expertise}
-        onChange={value => setProfile({...profile, expertise: value})}
-        mt="md"
-      />
+        <Grid.Col span={6}>
+          <Select
+            label="Expertise Area"
+            data={['Computer Science', 'Business', 'Engineering', 'Design']}
+            value={profile.expertise}
+            onChange={value => setProfile({...profile, expertise: value})}
+            required
+          />
+        </Grid.Col>
 
-      <JsonInput
-        label="Availability"
-        value={JSON.stringify(profile.availability || {}, null, 2)}
-        onChange={value => setProfile({...profile, availability: JSON.parse(value)})}
-        mt="md"
-        minRows={4}
-      />
+        <Grid.Col span={12}>
+          <JsonInput
+            label="Availability"
+            value={JSON.stringify(profile.availability || {}, null, 2)}
+            onChange={value => setProfile({...profile, availability: JSON.parse(value)})}
+            minRows={4}
+            formatOnBlur
+          />
+        </Grid.Col>
 
-      <Button mt="xl" loading={loading} onClick={handleSave}>
-        Save Profile
-      </Button>
+        <Grid.Col span={12}>
+          <Button fullWidth size="lg" mt="xl" onClick={handleSave}>
+            Save Profile
+          </Button>
+        </Grid.Col>
+      </Grid>
     </Card>
   );
 }
+

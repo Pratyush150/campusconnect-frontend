@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { authService } from '../api/auth';
+import { TextInput, PasswordInput, Select, Button, Paper, Title, Container, Text } from '@mantine/core';
+import { toast } from 'react-toastify';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -9,43 +11,50 @@ export default function Register() {
     role: 'STUDENT',
     college: ''
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (field) => (e) => {
+    setForm({ ...form, [field]: e.target.value });
   };
 
-  // Handle form submission
+  const handleRoleChange = (value) => setForm({ ...form, role: value });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setLoading(true);
     try {
       await authService.register(form);
-      setSuccess('Registration successful! Check your email to verify your account.');
+      toast.success('Registration successful! Check your email to verify your account.');
+      setForm({ name: '', email: '', password: '', role: 'STUDENT', college: '' });
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      toast.error(err.response?.data?.error || 'Registration failed');
     }
+    setLoading(false);
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">{success}</p>}
-      <form onSubmit={handleSubmit}>
-        <input name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
-        <input name="email" value={form.email} onChange={handleChange} placeholder="Email" required />
-        <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" required />
-        <select name="role" value={form.role} onChange={handleChange}>
-          <option value="STUDENT">Student</option>
-          <option value="MENTOR">Mentor</option>
-        </select>
-        <input name="college" value={form.college} onChange={handleChange} placeholder="College" />
-        <button type="submit">Register</button>
-      </form>
-    </div>
+    <Container size={420} my={40}>
+      <Title align="center" mb={20}>Register</Title>
+      <Paper withBorder shadow="md" p={30} radius="md">
+        <form onSubmit={handleSubmit}>
+          <TextInput label="Name" value={form.name} onChange={handleChange('name')} required mb="sm" />
+          <TextInput label="Email" type="email" value={form.email} onChange={handleChange('email')} required mb="sm" />
+          <PasswordInput label="Password" value={form.password} onChange={handleChange('password')} required mb="sm" />
+          <Select
+            label="Role"
+            data={[
+              { value: 'STUDENT', label: 'Student' },
+              { value: 'MENTOR', label: 'Mentor' }
+            ]}
+            value={form.role}
+            onChange={handleRoleChange}
+            mb="sm"
+          />
+          <TextInput label="College" value={form.college} onChange={handleChange('college')} mb="sm" />
+          <Button type="submit" fullWidth loading={loading} mt="md">Register</Button>
+        </form>
+      </Paper>
+    </Container>
   );
 }
+

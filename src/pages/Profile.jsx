@@ -1,9 +1,8 @@
-// src/pages/Profile.jsx
 import React from 'react';
-// ...rest of your imports and code
 import { useAuth } from '../context/AuthContext';
 import StudentProfile from '../components/StudentProfile';
 import MentorProfile from '../components/MentorProfile';
+import { Container, LoadingOverlay, Center, Loader } from '@mantine/core';
 
 export default function Profile() {
   const { user, login } = useAuth();
@@ -12,15 +11,22 @@ export default function Profile() {
     login(updatedUser, localStorage.getItem('token'));
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) {
+    return (
+      <Center style={{ height: '100vh' }}>
+        <Loader size="xl" />
+      </Center>
+    );
+  }
 
   return (
-    <div style={{ padding: '2rem 0' }}>
+    <Container size="lg" py="xl">
+      <LoadingOverlay visible={!user} />
       {user.role === 'STUDENT' ? (
         <StudentProfile user={user} onProfileUpdate={handleProfileUpdate} />
       ) : (
         <MentorProfile user={user} onProfileUpdate={handleProfileUpdate} />
       )}
-    </div>
+    </Container>
   );
 }

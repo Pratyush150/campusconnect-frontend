@@ -1,15 +1,21 @@
-// src/pages/PaymentCancel.jsx
 import React from 'react';
-// ...rest of your imports and code
+import { Container, Title, Text, Button, Center } from '@mantine/core';
 import { IconCircleX } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 
 export default function PaymentCancel() {
   return (
-    <div className="payment-status">
-      <IconCircleX size={64} color="red" />
-      <h2>Payment Cancelled</h2>
-      <p>Your booking was not completed.</p>
-    </div>
+    <Container size="sm">
+      <Center style={{ height: '100vh', flexDirection: 'column' }}>
+        <IconCircleX size={80} color="#fa5252" />
+        <Title order={1} mt="xl">Payment Cancelled</Title>
+        <Text size="lg" mt="sm" color="dimmed" align="center">
+          Your booking was not completed.
+        </Text>
+        <Button component={Link} to="/mentors" size="lg" mt="xl">
+          Try Again
+        </Button>
+      </Center>
+    </Container>
   );
 }
-

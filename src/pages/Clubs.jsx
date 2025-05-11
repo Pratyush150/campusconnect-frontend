@@ -1,8 +1,5 @@
-// src/pages/Clubs.jsx
-import React from 'react';
-// ...rest of your imports and code
-import { Card, Button, Group, Text, Timeline } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Container, Card, Grid, Text, Title, Button, Timeline } from '@mantine/core';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -11,29 +8,35 @@ export default function Clubs() {
   const [clubs, setClubs] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_URL}/clubs`).then(res => setClubs(res.data));
+    axios.get(`${API_URL}/clubs`)
+      .then(res => setClubs(res.data));
   }, []);
 
   return (
-    <div>
-      <Text size="xl" weight={700}>Clubs</Text>
-      <Group>
+    <Container size="lg" py="xl">
+      <Title order={2} mb="xl">Student Clubs</Title>
+      <Grid>
         {clubs.map(club => (
-          <Card key={club.id} shadow="sm" p="lg" withBorder>
-            <Text weight={500}>{club.name}</Text>
-            <Text size="sm" color="dimmed">{club.description}</Text>
-            <Button mt="md" variant="light">Join</Button>
-            <Timeline active={0} bulletSize={24} lineWidth={2} mt="md">
-              {club.events.map(ev => (
-                <Timeline.Item key={ev.id} title={ev.title} bullet={<span>📅</span>}>
-                  <Text color="dimmed" size="sm">{ev.date}</Text>
-                  <Text size="xs">{ev.description}</Text>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Card>
+          <Grid.Col key={club.id} span={4}>
+            <Card shadow="sm" p="lg">
+              <Title order={4} mb="sm">{club.name}</Title>
+              <Text size="sm" color="dimmed" mb="md">{club.description}</Text>
+              
+              <Timeline active={club.events.length} bulletSize={24} lineWidth={2}>
+                {club.events.map(event => (
+                  <Timeline.Item key={event.id} title={event.title}>
+                    <Text size="sm" color="dimmed">{event.date}</Text>
+                    <Text size="xs">{event.description}</Text>
+                  </Timeline.Item>
+                ))}
+              </Timeline>
+              
+              <Button fullWidth mt="md" variant="light">Join Club</Button>
+            </Card>
+          </Grid.Col>
         ))}
-      </Group>
-    </div>
+      </Grid>
+    </Container>
   );
 }
+

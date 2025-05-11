@@ -1,9 +1,6 @@
-// src/pages/AdminDashboard.jsx
-import React from 'react';
-// ...rest of your imports and code
-import { Table, Button, Group, Text, Badge, Title, Divider } from '@mantine/core';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Group, Text, Badge, Title, Divider, Container, LoadingOverlay } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -11,52 +8,58 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function AdminDashboard() {
   const [resources, setResources] = useState([]);
   const [pendingMentors, setPendingMentors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch resources for moderation
   useEffect(() => {
-    axios.get(`${API_URL}/admin/resources`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    }).then(res => setResources(res.data));
+    Promise.all([
+      axios.get(`${API_URL}/admin/resources`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      }),
+      axios.get(`${API_URL}/admin/pending-verifications`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+    ]).then(([resRes, mentRes]) => {
+      setResources(resRes.data);
+      setPendingMentors(mentRes.data);
+      setLoading(false);
+    }).catch(() => {
+      showNotification({ color: 'red', message: 'Failed to load data' });
+      setLoading(false);
+    });
   }, []);
 
-  // Fetch pending mentor verifications
-  useEffect(() => {
-    axios.get(`${API_URL}/admin/pending-verifications`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    }).then(res => setPendingMentors(res.data));
-  }, []);
-
-  // Approve resource
-  const handleApprove = async (id) => {
-    await axios.post(`${API_URL}/admin/resources/${id}/approve`, {}, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setResources(resources.map(r => r.id === id ? { ...r, status: 'approved' } : r));
-    showNotification({ color: 'green', message: 'Resource approved' });
+  const handleResourceAction = async (id, action) => {
+    try {
+      if (action === 'approve') {
+        await axios.post(`${API_URL}/admin/resources/${id}/approve`, {}, { headers });
+        showNotification({ color: 'green', message: 'Resource approved' });
+      } else {
+        await axios.delete(`${API_URL}/admin/resources/${id}`, { headers });
+        showNotification({ color: 'red', message: 'Resource deleted' });
+      }
+      setResources(resources.filter(r => r.id !== id));
+    } catch {
+      showNotification({ color: 'red', message: 'Action failed' });
+    }
   };
 
-  // Delete resource
-  const handleDelete = async (id) => {
-    await axios.delete(`${API_URL}/admin/resources/${id}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setResources(resources.filter(r => r.id !== id));
-    showNotification({ color: 'red', message: 'Resource deleted' });
-  };
-
-  // Approve mentor
   const approveMentor = async (mentorId) => {
-    await axios.post(`${API_URL}/admin/verify-mentor/${mentorId}`, {}, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setPendingMentors(pendingMentors.filter(m => m._id !== mentorId));
-    showNotification({ color: 'green', message: 'Mentor approved' });
+    try {
+      await axios.post(`${API_URL}/admin/verify-mentor/${mentorId}`, {}, { headers });
+      setPendingMentors(pendingMentors.filter(m => m._id !== mentorId));
+      showNotification({ color: 'green', message: 'Mentor approved' });
+    } catch {
+      showNotification({ color: 'red', message: 'Approval failed' });
+    }
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "auto", padding: 24 }}>
-      <Title order={2} mb="md">Mentor Verification Queue</Title>
-      <Table mb="xl">
+    <Container size="xl" py="xl">
+      <LoadingOverlay visible={loading} />
+      <Title order={2} mb="xl">Admin Dashboard</Title>
+
+      <Title order={3} mb="md">Mentor Verification Queue</Title>
+      <Table striped highlightOnHover>
         <thead>
           <tr>
             <th>Name</th>
@@ -70,7 +73,7 @@ export default function AdminDashboard() {
               <td>{mentor.name}</td>
               <td>{mentor.expertise}</td>
               <td>
-                <Button color="green" size="xs" onClick={() => approveMentor(mentor._id)}>
+                <Button compact variant="light" color="green" onClick={() => approveMentor(mentor._id)}>
                   Approve
                 </Button>
               </td>
@@ -79,10 +82,10 @@ export default function AdminDashboard() {
         </tbody>
       </Table>
 
-      <Divider my="lg" />
+      <Divider my="xl" />
 
-      <Title order={2} mb="md">Resource Moderation</Title>
-      <Table>
+      <Title order={3} mb="md">Resource Moderation</Title>
+      <Table striped highlightOnHover>
         <thead>
           <tr>
             <th>Title</th>
@@ -102,15 +105,19 @@ export default function AdminDashboard() {
                 </Badge>
               </td>
               <td>
-                <Group>
-                  <Button color="green" size="xs" onClick={() => handleApprove(r.id)}>Approve</Button>
-                  <Button color="red" size="xs" onClick={() => handleDelete(r.id)}>Delete</Button>
+                <Group spacing="xs">
+                  <Button compact variant="light" color="green" onClick={() => handleResourceAction(r.id, 'approve')}>
+                    Approve
+                  </Button>
+                  <Button compact variant="light" color="red" onClick={() => handleResourceAction(r.id, 'delete')}>
+                    Delete
+                  </Button>
                 </Group>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-    </div>
+    </Container>
   );
 }
