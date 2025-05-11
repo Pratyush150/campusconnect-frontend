@@ -12,7 +12,7 @@ function DarkModeToggle() {
     <ActionIcon
       variant="outline"
       color={dark ? 'yellow' : 'blue'}
-      onClick={toggleColorScheme}
+      onClick={() => toggleColorScheme()}
       title="Toggle color scheme"
       size="lg"
     >
@@ -61,4 +61,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
