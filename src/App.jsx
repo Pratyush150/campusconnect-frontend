@@ -17,7 +17,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Events from './pages/Events';
 import LinkedInCallback from './pages/LinkedInCallback';
 import NotificationWrapper from './components/NotificationWrapper';
-
+import VerifyEmail from './components/VerifyEmail';
 export default function App() {
   return (
     <AuthProvider>
@@ -25,6 +25,7 @@ export default function App() {
         <Navbar />
         <Routes>
           {/* Public Routes */}
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
