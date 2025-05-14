@@ -1,15 +1,31 @@
-import { createContext, useEffect, useState } from 'react';
-import io from 'socket.io-client';
+// src/context/SocketContext.jsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 
-export const SocketContext = createContext();
+// Create and export the context
+export const SocketContext = createContext(null);
 
-export default function SocketProvider({ children }) {
+// Export the hook properly
+export const useSocket = () => {
+  return useContext(SocketContext);
+};
+
+// Socket provider component
+const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_URL);
-    setSocket(newSocket);
-    return () => newSocket.disconnect();
+    const socketInstance = io(import.meta.env.VITE_SOCKET_URL, {
+      transports: ['websocket'],
+      auth: {
+        token: localStorage.getItem('token'),
+      },
+    });
+    setSocket(socketInstance);
+
+    return () => {
+      socketInstance.disconnect();
+    };
   }, []);
 
   return (
@@ -17,4 +33,6 @@ export default function SocketProvider({ children }) {
       {children}
     </SocketContext.Provider>
   );
-}
+};
+
+export default SocketProvider; // Default export
