@@ -1,103 +1,139 @@
-
-import React from 'react';
-import { Card, Textarea, Button, Group, Loader, Text, Avatar, Divider, Stack, ActionIcon } from '@mantine/core';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Container, Card, Textarea, Button, Group, Loader, Stack, 
+  SegmentedControl, Avatar, Text 
+} from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { IconHeart, IconMessageCircle, IconShare } from '@tabler/icons-react';
 import axios from 'axios';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { useAuth } from '../context/AuthContext';
+import PostCard from '../components/PostCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-const PostCard = ({ post }) => (
-  <Card withBorder shadow="sm" radius="md" mb="md">
-    <Group align="start" noWrap>
-      <Avatar src={post.author?.profilePic} radius="xl" />
-      <Stack spacing={4} style={{ flex: 1 }}>
-        <Group position="apart">
-          <Text weight={600}>{post.author?.name}</Text>
-          <Text size="sm" color="dimmed">
-            {new Date(post.createdAt).toLocaleDateString()}
-          </Text>
-        </Group>
-        <Text size="sm">{post.content}</Text>
-        <Group mt="sm" spacing="xl">
-          <ActionIcon>
-            <IconHeart size={18} />
-            <Text ml={4}>{post.likesCount}</Text>
-          </ActionIcon>
-          <ActionIcon>
-            <IconMessageCircle size={18} />
-            <Text ml={4}>{post.commentsCount}</Text>
-          </ActionIcon>
-          <ActionIcon>
-            <IconShare size={18} />
-          </ActionIcon>
-        </Group>
-      </Stack>
-    </Group>
-  </Card>
-);
 
 export default function Feed() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchPosts = async (pageNum = 1, filterVal = filter) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/posts?page=${pageNum}&filter=${filterVal}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      if (pageNum === 1) {
+        setPosts(res.data.posts);
+      } else {
+        setPosts(prev => [...prev, ...res.data.posts]);
+      }
+      setHasMore(res.data.hasMore);
+      setPage(pageNum);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    axios.get(`${API_URL}/posts`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => setPosts(res.data.posts))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchPosts(1, filter);
+  }, [filter]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!content.trim()) {
-      showNotification({ color: 'red', message: 'Post cannot be empty' });
-      return;
+  const loadMorePosts = () => {
+    if (hasMore && !loading) {
+      fetchPosts(page + 1, filter);
     }
-    const res = await axios.post(`${API_URL}/posts`, { content }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setPosts([res.data.post, ...posts]);
-    setContent('');
-    showNotification({ color: 'green', message: 'Posted!' });
+  };
+
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    setPosting(true);
+    try {
+      const res = await axios.post(
+        `${API_URL}/posts`,
+        { content, images: [] },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      setPosts([res.data.post, ...posts]);
+      setContent('');
+      showNotification({ message: 'Post created successfully' });
+    } catch (err) {
+      showNotification({ color: 'red', message: 'Failed to create post' });
+    }
+    setPosting(false);
+  };
+
+  const handleLike = (postId, isLiked) => {
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, isLiked, likesCount: isLiked ? post.likesCount + 1 : post.likesCount - 1 }
+        : post
+    ));
   };
 
   return (
     <Container size="md" py="xl">
+      <SegmentedControl
+        value={filter}
+        onChange={setFilter}
+        data={[
+          { label: 'All Posts', value: 'all' },
+          { label: 'Following', value: 'following' },
+        ]}
+        mb="xl"
+      />
+
       <Card withBorder shadow="sm" mb="xl">
-        <Group align="start" noWrap>
-          <Avatar src={user?.profilePic} radius="xl" />
-          <Textarea
-            placeholder="Share your thoughts..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            autosize
-            minRows={2}
-            style={{ flex: 1 }}
-          />
-        </Group>
-        <Group position="right" mt="md">
-          <Button onClick={handleSubmit} loading={loading}>
-            Post
-          </Button>
-        </Group>
+        <form onSubmit={handlePostSubmit}>
+          <Group align="start" noWrap>
+            <Avatar src={user?.profilePic} radius="xl">
+              {user?.name?.[0]}
+            </Avatar>
+            <Textarea
+              placeholder="Share your thoughts..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              autosize
+              minRows={2}
+              style={{ flex: 1 }}
+            />
+          </Group>
+          <Group position="right" mt="md">
+            <Button type="submit" loading={posting}>
+              Post
+            </Button>
+          </Group>
+        </form>
       </Card>
 
-      {loading ? (
-        <Loader />
-      ) : (
+      <InfiniteScroll
+        dataLength={posts.length}
+        next={loadMorePosts}
+        hasMore={hasMore}
+        loader={<Loader />}
+        endMessage={
+          <Text align="center" color="dimmed" mt="md">
+            No more posts to show
+          </Text>
+        }
+      >
         <Stack>
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+          {posts.map(post => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+              onLike={handleLike}
+            />
           ))}
         </Stack>
-      )}
+      </InfiniteScroll>
     </Container>
   );
 }
+
