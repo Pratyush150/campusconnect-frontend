@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, Card, Avatar, Text, Badge, Group, Button, Container, TextInput, Select, LoadingOverlay } from '@mantine/core';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { showNotification } from '@mantine/notifications';
 
