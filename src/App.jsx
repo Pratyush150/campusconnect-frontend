@@ -8,7 +8,7 @@ import Register from './pages/Register';
 import Resources from './pages/Resources';
 import Feed from './pages/Feed';
 import { PaymentSuccess, PaymentCancel } from './pages/index';
-import FindMentor from './pages/FindMentor'; // or FindMentors if that's the one you want
+import FindMentors from './pages/FindMentors'; // Use only the plural version
 import Forum from './pages/Forum';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
@@ -18,6 +18,7 @@ import Events from './pages/Events';
 import LinkedInCallback from './pages/LinkedInCallback';
 import NotificationWrapper from './components/NotificationWrapper';
 import VerifyEmail from './components/VerifyEmail';
+
 export default function App() {
   return (
     <AuthProvider>
@@ -30,11 +31,20 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/cancel" element={<PaymentCancel />} />
-          <Route path="/mentors" element={<FindMentor />} /> {/* or FindMentors */}
+          <Route path="/mentors" element={<FindMentors />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/linkedin/callback" element={<LinkedInCallback />} />
-          {/* NotFound route should be last */}
           <Route path="*" element={<NotFound />} />
+
+          {/* Mentor public profile (view mode) */}
+          <Route 
+            path="/mentors/:id" 
+            element={
+              <ProtectedRoute>
+                <Profile mode="view" />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route path="/resources" element={
@@ -49,7 +59,7 @@ export default function App() {
           }/>
           <Route path="/profile" element={
             <ProtectedRoute>
-              <Profile />
+              <Profile mode="edit" />
             </ProtectedRoute>
           }/>
           <Route path="/messages" element={
@@ -73,7 +83,4 @@ export default function App() {
     </AuthProvider>
   );
 }
-
-
-
 

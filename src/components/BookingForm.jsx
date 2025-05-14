@@ -1,47 +1,71 @@
-// src/components/BookingForm.jsx
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Card, Text, Button, LoadingOverlay } from '@mantine/core';
 import { loadStripe } from '@stripe/stripe-js';
-import { Card, Text, Button } from '@mantine/core';
-import { io } from 'socket.io-client';
+import axios from 'axios';
+import { showNotification } from '@mantine/notifications';
 
-// Use Vite env variable for client URL and Stripe key
-const socket = io(import.meta.env.VITE_CLIENT_URL);
+const API_URL = import.meta.env.VITE_API_URL;
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY);
 
 export function BookingForm({ mentor, studentId, bookingData }) {
   const [loading, setLoading] = useState(false);
 
   const handlePayment = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
+      
+      // Create booking record first
+      const { data } = await axios.post(
+        `${API_URL}/bookings`,
+        {
+          ...bookingData,
+          studentId,
+          mentorId: mentor.id,
+          status: 'pending_payment'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
 
-    // Emit real-time booking event to mentor
-    socket.emit('new_booking', mentor.id, {
-      ...bookingData,
-      studentId,
-      mentorId: mentor.id,
-    });
+      // Process payment
+      const stripe = await stripePromise;
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: data.stripeSessionId
+      });
 
-    // Stripe payment logic
-    const stripe = await stripePromise;
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [{ price: mentor.stripePriceId, quantity: 1 }], // Use mentor's Stripe price ID
-      mode: 'payment',
-      successUrl: `${window.location.origin}/success`,
-      cancelUrl: `${window.location.origin}/cancel`,
-    });
-
-    if (error) {
-      // Handle error (optional: show toast or notification)
+      if (error) {
+        showNotification({
+          color: 'red',
+          title: 'Payment Failed',
+          message: error.message
+        });
+      }
+    } catch (err) {
+      showNotification({
+        color: 'red',
+        title: 'Error',
+        message: 'Failed to initiate booking'
+      });
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card>
-      <Text size="xl">${mentor.hourlyRate}/hour</Text>
-      <Button onClick={handlePayment} fullWidth loading={loading}>
-        Book Session
+    <Card withBorder p="lg" radius="md">
+      <LoadingOverlay visible={loading} />
+      <Text size="xl" weight={500} mb="sm">
+        ${mentor.hourlyRate}/hour
+      </Text>
+      <Button 
+        fullWidth 
+        onClick={handlePayment}
+        disabled={!mentor.stripePriceId}
+      >
+        {mentor.stripePriceId ? 'Book Session' : 'Booking Unavailable'}
       </Button>
     </Card>
   );

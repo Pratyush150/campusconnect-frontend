@@ -1,67 +1,95 @@
 import React, { useState, useEffect } from 'react';
-import { Rating, Textarea, Button, Group, Card, Text, Stack, Divider } from '@mantine/core';
+import { Rating, Textarea, Button, Card, Text, Stack, LoadingOverlay } from '@mantine/core';
 import axios from 'axios';
 import { showNotification } from '@mantine/notifications';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function MentorReviews({ mentorId }) {
   const [reviews, setReviews] = useState([]);
-  const [value, setValue] = useState(0);
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    axios.get(`/api/mentor/${mentorId}/reviews`)
-      .then(res => setReviews(res.data))
-      .catch(() => showNotification({ color: 'red', message: 'Failed to load reviews' }));
+    const fetchReviews = async () => {
+      try {
+        const { data } = await axios.get(
+          `${API_URL}/mentors/${mentorId}/reviews`
+        );
+        setReviews(data);
+      } catch (error) {
+        showNotification({
+          color: 'red',
+          title: 'Error',
+          message: 'Failed to load reviews'
+        });
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchReviews();
   }, [mentorId]);
 
-  const submitReview = async () => {
+  const handleSubmit = async () => {
     try {
       setLoading(true);
-      await axios.post(`/api/mentor/${mentorId}/reviews`, { rating: value, comment });
-      setReviews([...reviews, { rating: value, comment }]);
-      setValue(0);
+      await axios.post(
+        `${API_URL}/mentors/${mentorId}/reviews`,
+        { rating, comment },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      setReviews([...reviews, { rating, comment }]);
+      setRating(0);
       setComment('');
-      showNotification({ color: 'green', message: 'Review submitted' });
-    } catch {
-      showNotification({ color: 'red', message: 'Failed to submit review' });
+      showNotification({
+        color: 'green',
+        title: 'Success',
+        message: 'Review submitted successfully'
+      });
+    } catch (error) {
+      showNotification({
+        color: 'red',
+        title: 'Error',
+        message: 'Failed to submit review'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card mt="lg" shadow="sm" radius="md">
-      <Text size="xl" weight={600} mb="md">Reviews</Text>
-      
-      {reviews.length === 0 && (
-        <Text color="dimmed" mb="md">No reviews yet. Be the first to share your experience!</Text>
-      )}
+    <Card withBorder radius="md" p="lg">
+      <LoadingOverlay visible={fetching} />
+      <Text size="xl" weight={600} mb="md">
+        Mentor Reviews
+      </Text>
 
-      <Stack spacing="md">
-        {reviews.map((r, i) => (
-          <div key={i}>
-            <Group>
-              <Rating value={r.rating} readOnly />
-              <Text weight={500}>{r.rating}/5</Text>
-            </Group>
-            <Text mt="xs">{r.comment}</Text>
-            {i < reviews.length - 1 && <Divider my="md" />}
+      <Stack spacing="lg">
+        {reviews.map((review, index) => (
+          <div key={index}>
+            <Rating value={review.rating} readOnly />
+            <Text mt="xs">{review.comment}</Text>
           </div>
         ))}
       </Stack>
 
       <Stack mt="xl">
-        <Rating value={value} onChange={setValue} size="lg" />
+        <Rating value={rating} onChange={setRating} size="lg" />
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Share your experience..."
           minRows={3}
         />
-        <Button 
-          onClick={submitReview} 
-          disabled={!value || !comment}
+        <Button
+          onClick={handleSubmit}
+          disabled={rating === 0 || comment.trim() === ''}
           loading={loading}
         >
           Submit Review

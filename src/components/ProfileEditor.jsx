@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Card,
   Avatar,
-  Text,
-  Button,
   TextInput,
   Select,
   JsonInput,
@@ -12,7 +10,9 @@ import {
   LoadingOverlay,
   Alert,
   FileInput,
-  SegmentedControl
+  SegmentedControl,
+  Button,
+  Text
 } from '@mantine/core';
 import { IconCloudUpload, IconCheck, IconAlertCircle, IconBrandLinkedin } from '@tabler/icons-react';
 import axios from 'axios';
@@ -42,7 +42,7 @@ const LinkedInVerification = ({ user }) => (
   </Group>
 );
 
-export default function ProfileEditor({ user, onSave }) {
+export default function ProfileEditor({ user, onSave, mode = 'edit' }) {
   const [editedUser, setEditedUser] = useState({ ...user });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -86,7 +86,7 @@ export default function ProfileEditor({ user, onSave }) {
       const res = await axios.put('/api/users/me', editedUser, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      onSave(res.data.user);
+      onSave && onSave(res.data.user);
       showNotification({
         title: 'Success!',
         message: 'Profile updated successfully',
@@ -100,20 +100,25 @@ export default function ProfileEditor({ user, onSave }) {
     }
   };
 
+  // Helper to disable fields in view mode
+  const isDisabled = mode === 'view';
+
   return (
     <Card padding="xl" shadow="sm" radius="md">
       <LoadingOverlay visible={loading} />
       
-      <SegmentedControl
-        value={activeTab}
-        onChange={setActiveTab}
-        data={[
-          { label: 'Basic Info', value: 'basic' },
-          { label: 'Professional Info', value: 'professional' },
-        ]}
-        fullWidth
-        mb="xl"
-      />
+      {mode === 'edit' && (
+        <SegmentedControl
+          value={activeTab}
+          onChange={setActiveTab}
+          data={[
+            { label: 'Basic Info', value: 'basic' },
+            { label: 'Professional Info', value: 'professional' },
+          ]}
+          fullWidth
+          mb="xl"
+        />
+      )}
 
       <form onSubmit={handleSubmit}>
         <Grid gutter="xl">
@@ -124,30 +129,34 @@ export default function ProfileEditor({ user, onSave }) {
               radius={60} 
               mx="auto"
             />
-            <FileInput
-              label="Change Avatar"
-              accept="image/*"
-              onChange={setAvatarFile}
-              value={avatarFile}
-              icon={<IconCloudUpload size={14} />}
-              mt="md"
-              style={{ maxWidth: 200, margin: '0 auto' }}
-              disabled={loading}
-            />
-            {avatarFile && (
-              <Button 
-                onClick={() => handleAvatarUpload(avatarFile)}
-                mt="sm"
-                compact
-                variant="light"
-                loading={loading}
-              >
-                Upload New Avatar
-              </Button>
+            {mode === 'edit' && (
+              <>
+                <FileInput
+                  label="Change Avatar"
+                  accept="image/*"
+                  onChange={setAvatarFile}
+                  value={avatarFile}
+                  icon={<IconCloudUpload size={14} />}
+                  mt="md"
+                  style={{ maxWidth: 200, margin: '0 auto' }}
+                  disabled={loading}
+                />
+                {avatarFile && (
+                  <Button 
+                    onClick={() => handleAvatarUpload(avatarFile)}
+                    mt="sm"
+                    compact
+                    variant="light"
+                    loading={loading}
+                  >
+                    Upload New Avatar
+                  </Button>
+                )}
+              </>
             )}
           </Grid.Col>
 
-          {activeTab === 'basic' && (
+          {(activeTab === 'basic' || mode === 'view') && (
             <>
               <Grid.Col md={6}>
                 <TextInput
@@ -155,6 +164,7 @@ export default function ProfileEditor({ user, onSave }) {
                   value={editedUser.name || ''}
                   onChange={e => setEditedUser({...editedUser, name: e.target.value})}
                   required
+                  disabled={isDisabled}
                 />
               </Grid.Col>
 
@@ -171,6 +181,7 @@ export default function ProfileEditor({ user, onSave }) {
                   label="College/University"
                   value={editedUser.college || ''}
                   onChange={e => setEditedUser({...editedUser, college: e.target.value})}
+                  disabled={isDisabled}
                 />
               </Grid.Col>
 
@@ -180,12 +191,13 @@ export default function ProfileEditor({ user, onSave }) {
                   value={editedUser.semester?.toString() || ''}
                   onChange={value => setEditedUser({...editedUser, semester: parseInt(value)})}
                   data={Array.from({length: 8}, (_, i) => ({ value: (i+1).toString(), label: `Semester ${i+1}` }))}
+                  disabled={isDisabled}
                 />
               </Grid.Col>
             </>
           )}
 
-          {activeTab === 'professional' && (
+          {(activeTab === 'professional' || mode === 'view') && (
             <>
               {user.role === 'MENTOR' && <LinkedInVerification user={editedUser} />}
 
@@ -198,6 +210,7 @@ export default function ProfileEditor({ user, onSave }) {
                     ...editedUser, 
                     hourlyRate: parseFloat(e.target.value)
                   })}
+                  disabled={isDisabled}
                 />
               </Grid.Col>
 
@@ -207,6 +220,7 @@ export default function ProfileEditor({ user, onSave }) {
                   value={editedUser.expertise || ''}
                   onChange={value => setEditedUser({...editedUser, expertise: value})}
                   data={['Computer Science', 'Business', 'Engineering', 'Design']}
+                  disabled={isDisabled}
                 />
               </Grid.Col>
 
@@ -221,6 +235,7 @@ export default function ProfileEditor({ user, onSave }) {
                   minRows={4}
                   formatOnBlur
                   validationError="Invalid JSON format"
+                  disabled={isDisabled}
                 />
               </Grid.Col>
             </>
@@ -240,20 +255,31 @@ export default function ProfileEditor({ user, onSave }) {
             </Grid.Col>
           )}
 
-          <Grid.Col span={12}>
-            <Button 
-              fullWidth 
-              size="md" 
-              type="submit"
-              loading={loading}
-              disabled={loading}
-            >
-              Save Changes
-            </Button>
-          </Grid.Col>
+          {mode === 'edit' && (
+            <Grid.Col span={12}>
+              <Button 
+                fullWidth 
+                size="md" 
+                type="submit"
+                loading={loading}
+                disabled={loading}
+              >
+                Save Changes
+              </Button>
+            </Grid.Col>
+          )}
+
+          {mode === 'view' && (
+            <Grid.Col span={12}>
+              <Text color="dimmed" align="center" mt="xl">
+                This is a public mentor profile.
+              </Text>
+            </Grid.Col>
+          )}
         </Grid>
       </form>
     </Card>
   );
 }
+
 
